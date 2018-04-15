@@ -201,12 +201,3 @@ print("F1 score (unweighted average) is %lf "% (metrics.flat_f1_score(y_test, y_
 print_score(y_test,y_pred)
 
 
-import pandas as pd
-
-a=[[0.95,0.98 ,0.96],[0.82,0.69,0.75],[0.76,0.53,0.63]]
-df = pd.DataFrame(np.array(a),
-                 index=['O', 'D', 'T',],
-                 columns=pd.Index(['Precison', 'Recall', 'F1-Score'], 
-                 name='Performance Plot')).round(2)
-df.plot(kind='bar',figsize=(8,5))
-

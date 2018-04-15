@@ -207,15 +207,3 @@ from sklearn.metrics import classification_report
 print(classification_report(y_out, y_proc,target_names=["O", "D","T"]))
 
 
-import pandas as pd
-
-a=[[0.94,0.97,0.96],[0.75,0.70,0.72],[0.73,0.45,0.56]]
-
-df = pd.DataFrame(np.array(a),
-                 index=['O', 'D', 'T',],
-                 columns=pd.Index(['Precison', 'Recall', 'F1-Score'], 
-                 name='Performance Plot')).round(2)
-
-
-df.plot(kind='bar',figsize=(8,5))
-
