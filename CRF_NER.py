@@ -1,9 +1,3 @@
-
-# coding: utf-8
-
-# In[16]:
-
-
 import nltk
 import numpy as np
 import sklearn_crfsuite
@@ -24,8 +18,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
 
 
-# In[ ]:
-
 
 ###### Note: A tutorial on Named Entity Recognition on CRF-Suite webpage given in the below link is used for reference and this 
 ###### code contains some line of codes directly taken from there.
@@ -33,14 +25,9 @@ from sklearn.cluster import KMeans
 ###### Code link: https://sklearn-crfsuite.readthedocs.io/en/latest/tutorial.html
 
 
-# In[17]:
-
 
 file="F:/Course Material/Semester 2/NLU/Assignment3/ner.txt"
 data=open(file,'r')
-
-
-# In[18]:
 
 
 data=data.readlines()
@@ -58,16 +45,11 @@ for token in data:
         dummy1.append(token[0:(len(token)-3)]) # appending tokens
         dummy2.append(token[-2]) #appending labels
 
-
-# In[19]:
-
-
+		
 W_embed = gensim.models.Word2Vec(tokenized_sent,min_count=1,size = 30)
 a = list(W_embed.wv.vocab)
 word_indices = dict((c, i) for i, c in enumerate(a))
 
-
-# In[20]:
 
 
 #Forming Embedding Matrix for training data
@@ -79,9 +61,6 @@ for word in word_indices.keys():
 kmeans = KMeans(n_clusters=3, random_state=0).fit(embedding_matrix)
 
 
-# In[30]:
-
-
 tagged_sents = []
 for i in range(len(tokenized_sent)):
     dummy1 = []
@@ -90,18 +69,12 @@ for i in range(len(tokenized_sent)):
     tagged_sents.append(dummy1)
 
 
-# In[31]:
-
-
 # POS Tagging of the docs
 Pos_tagged_sent=[]
 for sent in tagged_sents:
     tokens = [t for t,label in sent]
     tagged=nltk.pos_tag(tokens)
     Pos_tagged_sent.append([(w,pos,label) for (w,label),(word,pos) in zip(sent,tagged)])  
-
-
-# In[33]:
 
 
 # features from word net 
@@ -118,9 +91,6 @@ def contain_digit(str):
     return False
 
 
-# In[51]:
-
-
 def token2features(sent, i): #taking window size of 5 words
     word = sent[i][0]
     postag = sent[i][1]
@@ -130,13 +100,13 @@ def token2features(sent, i): #taking window size of 5 words
         'word.lower()': word.lower(),
         'suffix': word[-5:],
         'prefix': word[0:5],
-        #'cluster': kmeans.predict((W_embed.wv[word]).reshape(-1,30))[0] ,
-        #'word.isupper()': word.isupper(),
-        #'word.istitle()': word.istitle(),
+        'cluster': kmeans.predict((W_embed.wv[word]).reshape(-1,30))[0] ,
+        'word.isupper()': word.isupper(),
+        'word.istitle()': word.istitle(),
         'word.isdigit()': contain_digit(word),
         'postag': postag,        
         'word.upper()':word.upper(),
-        #'no_of_contexts':no_of_contexts(word),
+        'no_of_contexts':no_of_contexts(word),
         'alpha':word.isalpha(),
         'word_len':len(word),                
     }
@@ -145,14 +115,14 @@ def token2features(sent, i): #taking window size of 5 words
         word1 = sent[i-1][0]
         postag1 = sent[i-1][1]
         features.update({
-            #'-1:cluster': kmeans.predict((W_embed.wv[word1]).reshape(-1,30))[0],
+            '-1:cluster': kmeans.predict((W_embed.wv[word1]).reshape(-1,30))[0],
             '-1:word.lower()': word1.lower(),
             '-1:word.istitle()': word1.istitle(),
             '-1:word.isupper()': word1.isupper(),
             '-1:word.isdigit()': contain_digit(word1),
             '-1:alpha':word1.isalpha(),
             '-1:postag': postag1,            
-            #'-1:no_of_contexts':no_of_contexts(word1),            
+            '-1:no_of_contexts':no_of_contexts(word1),            
         })
     else:
         features['BOS'] = True
@@ -161,21 +131,18 @@ def token2features(sent, i): #taking window size of 5 words
         word1 = sent[i+1][0]
         postag1 = sent[i+1][1]
         features.update({
-            #'+1:cluster': kmeans.predict((W_embed.wv[word1]).reshape(-1,30))[0],
+            '+1:cluster': kmeans.predict((W_embed.wv[word1]).reshape(-1,30))[0],
             '+1:word.upper()': word1.upper(),
             '+1:word.lower()': word1.lower(),
             '+1:word.istitle()': word1.istitle(),
             '+1:word.isupper()': word1.isupper(),
             '+1:word.isdigit()':contain_digit(word1),
             '+1:postag': postag1,
-            #'+1:no_of_contexts':no_of_contexts(word1),                    
+            '+1:no_of_contexts':no_of_contexts(word1),                    
         })
     else:
         features['EOS'] = True    
     return features
-
-
-# In[52]:
 
 
 # A function for extracting features in documents
@@ -207,9 +174,6 @@ def print_score(y_test,y_pred):
     print(classification_report(truths, predictions,target_names=["O", "D","T"]))
 
 
-# In[ ]:
-
-
 labels=["O","D","T"]
 crf = sklearn_crfsuite.CRF(algorithm='lbfgs', max_iterations=1000, all_possible_transitions=True, verbose=False)
 
@@ -224,9 +188,6 @@ rs = RandomizedSearchCV(crf, params_space, cv=10, verbose=1, n_jobs=-1, n_iter=2
 rs.fit(X_train, y_train)
 
 
-# In[54]:
-
-
 crf = sklearn_crfsuite.CRF(algorithm='lbfgs',c1=0.02,c2=0.3 ,
                            max_iterations=2000,
                            all_possible_transitions=True,
@@ -238,9 +199,6 @@ print("F1 score (unweighted average) is %lf "% (metrics.flat_f1_score(y_test, y_
                       average='macro', labels=labels)))
 
 print_score(y_test,y_pred)
-
-
-# In[55]:
 
 
 import pandas as pd
